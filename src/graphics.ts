@@ -191,8 +191,7 @@ export class Graphics {
                 const cellIndexX = cellX + x * chunkSize + cellIndexOffset;
                 const cellIndexY = cellY + y * chunkSize + cellIndexOffset;
 
-                chunkCtx.fillStyle = "#000000";
-                if (cellIndexX in this.world.cells && cellIndexY in this.world.cells[cellX + cellIndexOffset]) {
+                if (cellIndexX in this.world.cells && cellIndexY in this.world.cells[cellIndexX]) {
                     const cell = this.world.cells[cellIndexX][cellIndexY];
 
                     const arg0 = (cell >>> 12) & 0xff;
@@ -203,13 +202,53 @@ export class Graphics {
                             chunkCtx.fillStyle = "#000000";
                             break;
                         case 1:
-                            chunkCtx.fillStyle = "hsl(115, 50%, " + ((arg1 - 512) / 512 * 25 + 45) + "%)";
+                            chunkCtx.fillStyle = "hsl(115, 50%, " + ((arg1 - 512) / 256 * 20 + 40) + "%)";
+                            break;
+                        case 2:
+                            chunkCtx.fillStyle = "hsl(" + ((512 - arg1) / 256 * 15 + 190) + ", 70%, " + ((arg1 - 512) / 256 * 25 + 45) + "%)";
+                            break;
+                        // case 3:
+                        //     // chunkCtx.fillStyle = "hsl(60, " + ((arg1 - 512) / 512 * 15 + 40) + "%, 70%)";
+                        //     // chunkCtx.fillStyle = "hsl(" + ((512 - arg1) / 512 * 7.5 + 125) + ", " + ((arg1 - 512) / 512 * 7.5 + 55) + "%, " + ((arg1 - 512) / 512 * 12.5 + 57.5) + "%)";
+                        //     chunkCtx.fillStyle = "hsl(0, 0%, " + ((arg1 - 512) / 512 * 25 + 50) + "%)";
+                        //     break;
+                        // case 4:
+                        //     // chunkCtx.fillStyle = "hsl(60, " + ((arg1 - 512) / 512 * 15 + 40) + "%, 70%)";
+                        //     chunkCtx.fillStyle = "hsl(115, 25%, " + ((arg1 - 512) / 512 * 25 + 47.5) + "%)";
+                        //     break;
+                        case 5:
+                            chunkCtx.fillStyle = "hsl(30, 40%, " + ((arg1 - 512) / 256 * 10 + 25) + "%)";
+                            break;
+                        case 6:
+                            chunkCtx.fillStyle = "hsl(30, 40%, " + ((arg1 - 512) / 256 * 10 + 25) + "%)";
+                            break;
                     }
+
+                    chunkCtx.fillRect(cellX * scale, cellY * scale, scale, scale);
+
+                    if (cell % 1024 != 5 && cell % 1024 != 6) {
+                        for (let offX = -3; offX <= 3; offX++) {
+                            for (let offY = -3; offY <= 3; offY++) {
+                                const offCellIndexX = cellX + offX + x * chunkSize + cellIndexOffset;
+                                const offCellIndexY = cellY + offY + y * chunkSize + cellIndexOffset;
+
+                                if (offCellIndexX in this.world.cells && offCellIndexY in this.world.cells[offCellIndexX]) {
+                                    const offCell = this.world.cells[offCellIndexX][offCellIndexY];
+                                    if (offCell % 1024 == 5 || offCell % 1024 == 6) {
+                                        chunkCtx.fillStyle = "hsla(130, 80%, " + ((arg1 - 512) / 256 * 20 + 25) + "%, 0.333)";
+                                        chunkCtx.fillRect(cellX * scale, cellY * scale, scale, scale);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    chunkCtx.fillStyle = "#000000";
+                    chunkCtx.fillRect(cellX * scale, cellY * scale, scale, scale);
                 }
-                
+
                 // ? "#" + ( * 64 + 128 | 0).toString(16).padStart(2, "0").repeat(3) : "#000000";
 
-                chunkCtx.fillRect(cellX * scale, cellY * scale, scale, scale);
             }
         }
 

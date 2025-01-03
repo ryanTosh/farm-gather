@@ -4,7 +4,7 @@ import { WorldRandomizer } from "./worldRandomizer";
 const WORLD_SIZE = 512; // MUST be 2**n and at least 16
 
 const BASE_SPEED = 8; // cells / second
-const SPRINT_SPEED_MULTIPLIER = 2;
+const SPRINT_SPEED_MULTIPLIER = 4;
 
 export type Cell = number; // int32 (12 bit ID, 20 bits state)
 
