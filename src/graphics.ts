@@ -2,10 +2,6 @@ import { CanvasManager } from "./canvasManager";
 import { Controls } from "./controls";
 import { World } from "./world";
 
-const ZOOM_SPEED: number = 2; // log(zoom) / second
-
-const MAX_ZOOM = 4;
-
 const CHUNK_SIZING_FACTOR = 16; // chunks / screenDimension
 const MIN_CHUNK_SIZE = 16; // cells / chunk
 
@@ -15,10 +11,7 @@ export class Graphics {
     private canvasMgr: CanvasManager;
     private ctx: CanvasRenderingContext2D;
 
-    private controls: Controls;
     private world: World;
-
-    private zoom: number = 1;
 
     private chunkCache: Map<string, HTMLCanvasElement> = new Map(); // key: x,y
     private chunkCacheScale: number | null = null;
@@ -27,31 +20,26 @@ export class Graphics {
 
     private frameTimes: [number, number][] = [];
 
-    constructor(canvasMgr: CanvasManager, controls: Controls, world: World) {
+    constructor(canvasMgr: CanvasManager, _controls: Controls, world: World) {
         this.canvasMgr = canvasMgr;
         this.ctx = canvasMgr.get2DContext();
 
-        this.controls = controls;
         this.world = world;
     }
 
-    public draw(tickDiff: number) { // tickDiff: seconds
+    public draw(_tickDiff: number) { // tickDiff: seconds
         const pStart = performance.now();
 
         this.chunkLoadCounter = 0;
 
-        if (this.controls.isBindDown("zoomIn")) this.zoom *= ZOOM_SPEED ** tickDiff;
-        if (this.controls.isBindDown("zoomOut")) this.zoom /= ZOOM_SPEED ** tickDiff;
-
-        this.zoom = Math.min(this.zoom, MAX_ZOOM);
+        const posX = this.world.getPosX(); // cells
+        const posY = this.world.getPosY(); // cells
+        const zoom = this.world.getZoom(); // unitless
 
         const width = this.canvasMgr.getWidth(); // pixels
         const height = this.canvasMgr.getHeight(); // pixels
-        const scale = Math.ceil(this.canvasMgr.getBaseScale() * this.zoom); // pixels / cell (int)
+        const scale = Math.ceil(this.canvasMgr.getBaseScale() * zoom); // pixels / cell (int)
         const chunkSize = this.calculateChunkSize(scale); // cells / chunk
-
-        const posX = this.world.getPosX(); // cells
-        const posY = this.world.getPosY(); // cells
 
         this.ctx.fillStyle = "#000000";
         this.ctx.fillRect(0, 0, width, height);
@@ -119,7 +107,7 @@ export class Graphics {
         this.ctx.fillText("chunkCache size: " + this.chunkCache.size, 5, 20);
         this.ctx.fillText("ticks: " + times[0] + "ms / " + times[Math.floor(times.length / 4)] + "ms / " + times[Math.floor(times.length / 2)] + "ms / " + times[Math.ceil(times.length * 3 / 4)] + "ms / " + times[times.length - 1] + "ms", 5, 35);
         this.ctx.fillText("scale, dims, chunkSize: " + scale + ", " + (width / scale).toFixed(2) + "\xd7" + (height / scale).toFixed(2) + ", " + chunkSize, 5, 50);
-        this.ctx.fillText("zoom: " + this.zoom, 5, 65);
+        this.ctx.fillText("zoom: " + zoom, 5, 65);
 
         const pNow = performance.now();
 
@@ -194,18 +182,18 @@ export class Graphics {
                 if (cellIndexX in this.world.cells && cellIndexY in this.world.cells[cellIndexX]) {
                     const cell = this.world.cells[cellIndexX][cellIndexY];
 
-                    const arg0 = (cell >>> 12) & 0xff;
-                    const arg1 = cell >>> 20;
+                    // const arg0 = (cell >>> 12) & 0xff;
+                    const altitude = ((cell >>> 20) - 512) / 256;
 
                     switch (cell % 1024) {
                         case 0:
                             chunkCtx.fillStyle = "#000000";
                             break;
                         case 1:
-                            chunkCtx.fillStyle = "hsl(115, 50%, " + ((arg1 - 512) / 256 * 20 + 40) + "%)";
+                            chunkCtx.fillStyle = "hsl(115, 50%, " + (altitude * 20 + 40) + "%)";
                             break;
                         case 2:
-                            chunkCtx.fillStyle = "hsl(" + ((512 - arg1) / 256 * 15 + 190) + ", 70%, " + ((arg1 - 512) / 256 * 25 + 45) + "%)";
+                            chunkCtx.fillStyle = "hsl(" + (-altitude * 15 + 190) + ", 70%, " + (altitude * 25 + 45) + "%)";
                             break;
                         // case 3:
                         //     // chunkCtx.fillStyle = "hsl(60, " + ((arg1 - 512) / 512 * 15 + 40) + "%, 70%)";
@@ -217,10 +205,7 @@ export class Graphics {
                         //     chunkCtx.fillStyle = "hsl(115, 25%, " + ((arg1 - 512) / 512 * 25 + 47.5) + "%)";
                         //     break;
                         case 5:
-                            chunkCtx.fillStyle = "hsl(30, 40%, " + ((arg1 - 512) / 256 * 10 + 25) + "%)";
-                            break;
-                        case 6:
-                            chunkCtx.fillStyle = "hsl(30, 40%, " + ((arg1 - 512) / 256 * 10 + 25) + "%)";
+                            chunkCtx.fillStyle = "hsl(30, 40%, " + (altitude * 10 + 25) + "%)";
                             break;
                     }
 
@@ -235,7 +220,7 @@ export class Graphics {
                                 if (offCellIndexX in this.world.cells && offCellIndexY in this.world.cells[offCellIndexX]) {
                                     const offCell = this.world.cells[offCellIndexX][offCellIndexY];
                                     if (offCell % 1024 == 5 || offCell % 1024 == 6) {
-                                        chunkCtx.fillStyle = "hsla(130, 80%, " + ((arg1 - 512) / 256 * 20 + 25) + "%, 0.333)";
+                                        chunkCtx.fillStyle = "hsla(130, " + (-altitude * 20 + 80) + "%, " + (altitude * 20 + 25) + "%, 0.333)";
                                         chunkCtx.fillRect(cellX * scale, cellY * scale, scale, scale);
                                     }
                                 }
