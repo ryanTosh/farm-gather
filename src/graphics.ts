@@ -195,16 +195,7 @@ export class Graphics {
                         case 2:
                             chunkCtx.fillStyle = "hsl(" + (-altitude * 15 + 190) + ", 70%, " + (altitude * 25 + 45) + "%)";
                             break;
-                        // case 3:
-                        //     // chunkCtx.fillStyle = "hsl(60, " + ((arg1 - 512) / 512 * 15 + 40) + "%, 70%)";
-                        //     // chunkCtx.fillStyle = "hsl(" + ((512 - arg1) / 512 * 7.5 + 125) + ", " + ((arg1 - 512) / 512 * 7.5 + 55) + "%, " + ((arg1 - 512) / 512 * 12.5 + 57.5) + "%)";
-                        //     chunkCtx.fillStyle = "hsl(0, 0%, " + ((arg1 - 512) / 512 * 25 + 50) + "%)";
-                        //     break;
-                        // case 4:
-                        //     // chunkCtx.fillStyle = "hsl(60, " + ((arg1 - 512) / 512 * 15 + 40) + "%, 70%)";
-                        //     chunkCtx.fillStyle = "hsl(115, 25%, " + ((arg1 - 512) / 512 * 25 + 47.5) + "%)";
-                        //     break;
-                        case 5:
+                        case 3:
                             chunkCtx.fillStyle = "hsl(30, 40%, " + (altitude * 10 + 25) + "%)";
                             break;
                     }
@@ -231,9 +222,6 @@ export class Graphics {
                     chunkCtx.fillStyle = "#000000";
                     chunkCtx.fillRect(cellX * scale, cellY * scale, scale, scale);
                 }
-
-                // ? "#" + ( * 64 + 128 | 0).toString(16).padStart(2, "0").repeat(3) : "#000000";
-
             }
         }
 

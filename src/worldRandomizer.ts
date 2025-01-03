@@ -1,7 +1,5 @@
 import { Cell } from "./world";
 
-const WORLD_GRID_SIZE = 256;
-
 const DIAMOND_SQUARE_H = 0.25; // [0, 1], lower values produce rougher terrain
 
 const WATER_SOURCE_PROPORTION = 1 / 4096;
@@ -18,13 +16,7 @@ export abstract class WorldRandomizer {
 
         const cells = new Array(size);
 
-        for (let i = 0; i < size; i++) cells[i] = new Array(size);
-
-        for (let x = 0; x < size; x++) {
-            for (let y = 0; y < size; y++) {
-                cells[x][y] = Math.min(Math.max(heightmap[x][y] * 256 + 512, 0), 1023) << 20 | 1;
-            }
-        }
+        for (let i = 0; i < size; i++) cells[i] = new Array(size).fill(1);
 
         for (let i = 0; i < Math.ceil(WATER_SOURCE_PROPORTION * size ** 2); i++) {
             this.insertWaterSource(cells, heightmap);
@@ -32,6 +24,12 @@ export abstract class WorldRandomizer {
 
         for (let i = 0; i < Math.ceil(TREE_ATTEMPT_PROPORTION * size ** 2); i++) {
             this.insertTree(cells, heightmap);
+        }
+
+        for (let x = 0; x < size; x++) {
+            for (let y = 0; y < size; y++) {
+                cells[x][y] |= Math.min(Math.max(heightmap[x][y] * 256 + 512, 0), 1023) << 20;
+            }
         }
 
         return cells;
@@ -100,7 +98,7 @@ export abstract class WorldRandomizer {
 
         if (cells[sourceX][sourceY] % 1024 != 1) return;
 
-        cells[sourceX][sourceY] ^= 3;
+        cells[sourceX][sourceY] = 2;
 
         const pqLowestGrass: ({ x: number, y: number, height: number })[] = [];
         const visitedWater: Set<string> = new Set();
@@ -146,7 +144,7 @@ export abstract class WorldRandomizer {
             const lowestGrass = pqLowestGrass.shift();
             if (lowestGrass === undefined) break;
 
-            cells[lowestGrass.x][lowestGrass.y!] ^= 3;
+            cells[lowestGrass.x][lowestGrass.y!] = 2;
 
             visitedWater.add(lowestGrass.x + "," + lowestGrass.y);
             waterToVisit.push([lowestGrass.x, lowestGrass.y]);
@@ -175,6 +173,6 @@ export abstract class WorldRandomizer {
 
         if (Math.random() >= 2 ** -((heightmap[x][y] - TREE_FILTER_ALTITUDE) / TREE_ALTITUDE_DECAY_HALF_LIFE)) return;
 
-        cells[x][y] ^= 4;
+        cells[x][y] = 3;
     }
 }
