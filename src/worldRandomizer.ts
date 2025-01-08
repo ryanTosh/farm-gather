@@ -6,9 +6,14 @@ const WATER_SOURCE_PROPORTION = 1 / 4096;
 const MIN_WATER_CELLS_PER_SOURCE = 128;
 const MAX_WATER_CELLS_PER_SOURCE = 2048;
 
-const TREE_ATTEMPT_PROPORTION = 1 / 16;
+const TREE_ATTEMPT_PROPORTION = 1 / 17;
 const TREE_FILTER_ALTITUDE = -0.75;
 const TREE_ALTITUDE_DECAY_HALF_LIFE = 1 / 4;
+const TREE_SAPLING_ODDS = 0.05;
+const TREE_STUMP_ODDS = 0.05;
+
+const BUSH_ATTEMPT_PROPORTION = 1 / Math.sqrt(2048);
+const BUSH_BERRIES_ODDS = 0.2;
 
 export abstract class WorldRandomizer {
     public static randomizeCells(size: number): Cell[][] {
@@ -24,6 +29,10 @@ export abstract class WorldRandomizer {
 
         for (let i = 0; i < Math.ceil(TREE_ATTEMPT_PROPORTION * size ** 2); i++) {
             this.insertTree(cells, heightmap);
+        }
+
+        for (let i = 0; i < Math.ceil(BUSH_ATTEMPT_PROPORTION * size ** 2); i++) {
+            this.insertBush(cells);
         }
 
         for (let x = 0; x < size; x++) {
@@ -173,6 +182,38 @@ export abstract class WorldRandomizer {
 
         if (Math.random() >= 2 ** -((heightmap[x][y] - TREE_FILTER_ALTITUDE) / TREE_ALTITUDE_DECAY_HALF_LIFE)) return;
 
-        cells[x][y] = 3;
+        const random = Math.random();
+        if (random < TREE_STUMP_ODDS) {
+            cells[x][y] = 5;
+        } else if (random < TREE_STUMP_ODDS + TREE_SAPLING_ODDS) {
+            cells[x][y] = 4;
+        } else {
+            cells[x][y] = 3;
+        }
+    }
+
+    private static insertBush(cells: Cell[][]) {
+        const size = cells.length;
+
+        const x = Math.floor(Math.random() * size);
+        const y = Math.floor(Math.random() * size);
+
+        if (cells[x][y] % 1024 != 1) return;
+
+        for (let offX = -2; offX <= 2; offX++) {
+            for (let offY = -2; offY <= 2; offY++) {
+                const targX = (x + offX + size) % size;
+                const targY = (y + offY + size) % size;
+
+                if (cells[targX][targY] % 1024 != 1/* && Math.random() ** 2 < 1 / Math.hypot(targX - x, targY - y)*/) return;
+            }
+        }
+
+        const random = Math.random();
+        if (random < BUSH_BERRIES_ODDS) {
+            cells[x][y] = 7;
+        } else {
+            cells[x][y] = 6;
+        }
     }
 }

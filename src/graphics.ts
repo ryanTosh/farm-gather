@@ -198,11 +198,25 @@ export class Graphics {
                         case 3:
                             chunkCtx.fillStyle = "hsl(30, 40%, " + (altitude * 10 + 25) + "%)";
                             break;
+                        case 4:
+                            chunkCtx.fillStyle = "hsl(110, 70%, " + (altitude * 15 + 55) + "%)";
+                            break;
+                        case 5:
+                            chunkCtx.fillStyle = "hsl(30, 50%, " + (altitude * 10 + 17.5) + "%)";
+                            break;
+                        case 6:
+                            chunkCtx.fillStyle = "hsl(120, 100%, " + (altitude * 10 + 20) + "%)";
+                            break;
+                        case 7:
+                            chunkCtx.fillStyle = "hsl(355, 90%, " + (altitude * 10 + 27.5) + "%)";
+                            break;
+                        default:
+                            chunkCtx.fillStyle = "#000000";
                     }
 
                     chunkCtx.fillRect(cellX * scale, cellY * scale, scale, scale);
 
-                    if (cell % 1024 != 5 && cell % 1024 != 6) {
+                    if (cell % 1024 != 3) {
                         for (let offX = -3; offX <= 3; offX++) {
                             for (let offY = -3; offY <= 3; offY++) {
                                 const offCellIndexX = cellX + offX + x * chunkSize + cellIndexOffset;
@@ -210,7 +224,7 @@ export class Graphics {
 
                                 if (offCellIndexX in this.world.cells && offCellIndexY in this.world.cells[offCellIndexX]) {
                                     const offCell = this.world.cells[offCellIndexX][offCellIndexY];
-                                    if (offCell % 1024 == 5 || offCell % 1024 == 6) {
+                                    if (offCell % 1024 == 3) {
                                         chunkCtx.fillStyle = "hsla(130, " + (-altitude * 20 + 80) + "%, " + (altitude * 20 + 25) + "%, 0.333)";
                                         chunkCtx.fillRect(cellX * scale, cellY * scale, scale, scale);
                                     }
